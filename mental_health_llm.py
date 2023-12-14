@@ -18,7 +18,7 @@ MAX_CHUNK_RESPONSE_SIZE = 100
 # Retrieve the set of English stopwords
 stop_words = set(stopwords.words('english'))
 
-# Initialize the LLM (assuming GPT-3.5-turbo-1106)
+# Initialize the LLM
 llm = ChatOpenAI(model_name="gpt-3.5-turbo-1106")
 
 def tokenize(document):
