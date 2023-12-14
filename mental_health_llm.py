@@ -12,7 +12,7 @@ nltk.download('stopwords')
 
 # Initialize constants
 CORPUS_FOLDER = "corpus"
-MAX_RESPONSE_SIZE = 200
+MAX_FINAL_RESPONSE_SIZE = 200
 MAX_CHUNK_RESPONSE_SIZE = 100
 
 # Retrieve the set of English stopwords
@@ -74,7 +74,6 @@ def retrieve_documents_with_bm25(query, tokenized_documents, top_k, remove_top_2
     query_tokens = tokenize(query)
     doc_scores = bm25.get_scores(query_tokens)
 
-    #TODO - Ask professor whether this is correct
     # If remove_top_2 is True, adjust the slicing to exclude the top 2 documents
     if remove_top_2:
         start_index = 2
@@ -135,7 +134,7 @@ def batch_process(prompts):
         batch = prompts[i:i+3]
 
         # Send the batch to the LLM
-        response_batch = llm.batch(batch, max_tokens=MAX_RESPONSE_SIZE)
+        response_batch = llm.batch(batch, max_tokens=MAX_CHUNK_RESPONSE_SIZE)
 
         # Extract each text response from the batch
         for response in response_batch:
@@ -150,6 +149,7 @@ def run_system():
     """
     Main function to run the document retrieval and summarization system.
     """
+    start = time.time()
     user_query = input("Please enter your mental health-related query: ")
     tokenized_documents = load_documents()
     top_k = 5 # Change here for top k documents
@@ -168,17 +168,16 @@ def run_system():
     # Batch process prompts
     combined_responses = batch_process(all_prompts)
 
-    #TODO - Ask professor whether to include CBT in prompt or not
     final_prompt = (
         f"Summary of Information: {combined_responses}\n\n"
         "Based on this earlier summary about cognitive-behavioral therapy (CBT) techniques, "
         f"apply these strategies directly through a normal conversational style of a counselor in 200 tokens or less to help a user's current situation and questions: {user_query}"
     )
 
-    final_response = llm.predict(final_prompt, max_tokens=MAX_RESPONSE_SIZE)
-    print(f"MentalHealthLLM Response: {final_response}")
+    final_response = llm.predict(final_prompt, max_tokens=MAX_FINAL_RESPONSE_SIZE)
+    print(f"Response: {final_response}")
+    end = time.time()
+    print(f"Response Duration: {end-start}")
 
 if __name__ == "__main__":
     run_system()
-
-    #TODO - How to evaluate system? Accuracy, precision?
